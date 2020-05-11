@@ -13,7 +13,7 @@ def main():
 	with open('db_sql.sql') as fichier:
 		lignes = fichier.read().split(';')
 		for ligne in lignes:
-			if len(ligne)<10:
+			if len(ligne)>10:
 				db.execute(ligne)
 				db.commit()
 		db.commit()
