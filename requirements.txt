@@ -6,3 +6,4 @@ flask-sqlalchemy
 wtforms
 requests
 gunicorn
+psycopg2-binary
