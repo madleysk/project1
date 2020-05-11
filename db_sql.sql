@@ -1,6 +1,6 @@
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS books;
+DROP TABLE IF EXISTS users;
 --
 -- Create Table users
 --
@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS "books" (
 --
 CREATE TABLE IF NOT EXISTS "reviews" (
 	"id" serial NOT NULL PRIMARY KEY, 
-	"isbn" varchar(12) NOT NULL REFERENCES books(isbn), 
-	"user_id" integer NOT NULL REFERENCES users(id),
+	"isbn" varchar(12) NOT NULL REFERENCES books(isbn) ON DELETE CASCADE, 
+	"user_id" integer NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 	"heading" varchar(100) DEFAULT 'No heading',
 	"comments" TEXT DEFAULT NULL,
 	"rating" float NOT NULL);
