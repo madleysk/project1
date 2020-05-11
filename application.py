@@ -32,7 +32,7 @@ def index():
 	data = {
 	"page_title":page_title
 	}
-	#init_db()
+	init_db()
 
 	keywords = request.args.get('search')
 	data['search']=keywords
