@@ -25,6 +25,8 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
+per_page=25
+off_set=0
 
 @app.route("/")
 def index():
@@ -38,7 +40,7 @@ def index():
 	data['search']=keywords
 	if keywords is not None and keywords !='':
 		keywords = '%'+keywords+'%'
-		books = db.execute("SELECT * FROM books WHERE title like :s or author like :s  or isbn like :s ",{"s":keywords}).fetchall()
+		books = db.execute("SELECT * FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s ",{"s":keywords}).fetchall()
 		if books:
 			data['books']= books
 		else:
@@ -140,8 +142,71 @@ def logout():
 	session.pop('user_id',None)
 	return redirect('/login')
 
-@app.route('/find_book')
-def find_book():
+@app.route('/list_books')
+@app.route('/list_books/page/<int:page>')
+def list_books(page='1'):
+	page_title = 'Find a book'
+	data = {
+	"page_title":page_title
+	}
+	page_arg = request.args.get('page')
+	if page_arg is not None:
+		page = page_arg
+	off_set = per_page*int(page)
+	res_count =0
+	keywords = request.args.get('search')
+	data['search']=keywords
+	if keywords is not None and keywords !='':
+		keywords = '%'+keywords+'%'
+		books = db.execute("SELECT * FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s ",{"s":keywords}).fetchall()
+		if books:
+			data['books']= books
+		else:
+			data['no_result']='No result found for these keywords.'
+	else:
+		books = db.execute("SELECT * FROM books LIMIT :per_page OFFSET :off_set",{"per_page":per_page,"off_set":off_set}).fetchall()
+		if books:
+			data['books']= books
+		else:
+			data['no_result']='No books in the database yet.'
+		# pagination
+		res_count = db.execute("SELECT count(*) as total FROM books").fetchone().total
+	
+	pages= int(res_count / per_page)
+	if res_count % per_page != 0:
+		pages += 1
+	iter_pages=[]
+	actual_page= int(off_set/per_page)
+	has_preview= False
+	has_next= False
+	next_page=0
+	prev_page=0
+	for i in range(pages):
+		iter_pages.append(i+1)
+	if actual_page > 1:
+		has_preview= True
+	else:
+		has_preview= None
+	if actual_page < pages:
+		has_next= True
+	else:
+		has_next= None
+	data['pagination']={
+		"iter_pages":iter_pages,
+		"page_range":range(1,pages),
+		"page":actual_page,
+		"has_prev":has_preview,
+		"has_next":has_next,
+		"next_page":actual_page+1,
+		"prev_page":actual_page-1,
+		"total":pages,
+	}
+	data['page_range'] = pagination_format(data['pagination'])
+	
+	return render_template("book_list.html",data=data)
+
+@app.route('/mybooks')
+def mybooks():
 	page_title = 'FInd a book'
 	data = {
 	"page_title":page_title
@@ -246,6 +311,15 @@ def format_rating(rate,css=''):
 		for i in range(int(rate),5):
 			rating_stars +='<span class="fa fa-star-o unchecked '+css+'" data-rate="'+str(i+1)+'"></span>\n'
 	return rating_stars
+	
+def pagination_format(page_obj):
+	index = page_obj['page']
+	max_index= int(page_obj['total'])
+	start_index= index - 3 if index >=3 else 0
+	end_index = index + 3 if index <= max_index - 3 else max_index
+	page_range = list(page_obj['page_range'])[int(start_index):int(end_index)]
+	return page_range
+	
 # https://www.goodreads.com/book/review_counts.json?key=xpF7YDthAftyDazUNvFWQ&isbns=1416949658
 """
 import requests
