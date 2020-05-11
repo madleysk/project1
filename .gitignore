@@ -13,3 +13,4 @@ crash.log
 venv/*
 __pycache__/*
 *.sqlite3
+*.back

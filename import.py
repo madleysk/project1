@@ -1,13 +1,23 @@
 import csv
 import os
+import psycopg2
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-engine = create_engine(os.getenv("DATABASE_URL",'sqlite:///mydb.sqlite3'))
+engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
 def main():
+	# Creating tables structure if not exists
+	with open('db_sql.sql') as fichier:
+		lignes = fichier.read().split(';')
+		for ligne in lignes:
+			if len(ligne)<10:
+				db.execute(ligne)
+				db.commit()
+		db.commit()
+	# inserting books
 	line_count = 0
 	with open("books.csv") as f:
 		reader = csv.reader(f)
