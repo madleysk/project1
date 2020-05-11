@@ -8,7 +8,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
-conn = psycopg2.connect(engine, sslmode='require')
+conn = psycopg2.connect(os.getenv("DATABASE_URL"), sslmode='require')
 
 def main():
 	# Creating tables structure if not exists
