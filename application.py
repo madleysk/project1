@@ -157,10 +157,14 @@ def list_books(page='1'):
 	keywords = request.args.get('search')
 	data['search']=keywords
 	if keywords is not None and keywords !='':
+		data['url_params'] = '&search='+keywords
 		keywords = '%'+keywords+'%'
-		books = db.execute("SELECT * FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s ",{"s":keywords}).fetchall()
+		books = db.execute("SELECT * FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s LIMIT :per_page OFFSET :off_set",{"s":keywords,"per_page":per_page,"off_set":off_set}).fetchall()
 		if books:
 			data['books']= books
+			# pagination
+			res_count = db.execute("SELECT count(*) as total FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s ",{"s":keywords}).fetchone().total
+			
 		else:
 			data['no_result']='No result found for these keywords.'
 	else:
