@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block body %}
+<style>
+p{
+	margin-bottom:3px;
+}
+</style>
+<div class="">
+	{% include "_notifications.html" %}
+	<div class="media mx-auto row">
+		<div class="col-md-3">
+			<div class="card book pull-right">
+				<div class="card-body">
+					<blockquote class="blockquote text-center border-0">
+					  <p class="m-0">{{data.book.title}}</p>
+					  <footer class="blockquote-footer">{{data.book.author}}</footer>
+					</blockquote>
+				</div>
+				<small class="text-center">{{data.book.year}}</small>
+				<small class="text-center">Ratings: {{data.book_rating_stars|safe}}
+				</small>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="media-body">
+				<h4 class="mt-2">{{data.book.title}}</h4>
+				<p><strong>Author:</strong> {{data.book.author}}</p>
+				<p><strong>Year:</strong> {{data.book.year}}</p>
+				{% if data.goodread_review %}
+				<p><strong>Goodread ratings:</strong> {{data.goodread_rating_stars|safe}}</p>
+				<p><strong>Goodread reviews count:</strong> {{data.goodread_review.books[0].reviews_count}}</p>
+				{% endif %}
+				<hr>
+				{%if data.my_rating %}
+				<p><strong>My rating: </strong>{{data.my_rating.rating}}</p>
+				<p><strong>Heading: </strong>{{data.my_rating.heading}}</p>
+				<p><strong>Comments: </strong>{{data.my_rating.comments}}</p>
+				<a href="#" id="editLink" >Edit my rating</a>
+				
+				<form method="post" id="myform" action="#" style="display:none;">
+					<div class="form-group mt-3 mb-0">
+						<label for="">My Rating:</label>
+							{{data.my_rating_stars|safe}}	
+						<input type="hidden" name="rating" id="myrating" value="{{data.my_rating.rating}}" required >
+					</div>
+					<div class="form-group">
+						<label for="">Heading:</label>
+						<input type="text" name="heading" id="heading" placeholder="Rate heading" class="form-control" value="{{data.my_rating.heading}}">
+					</div>
+					<div class="form-group">
+						<label for="">Comments:</label>
+						<textarea name="comments" id="comments" class="form-control" placeholder="Your comment goes here" >{{data.my_rating.comments}}</textarea>
+					</div>
+					<div class="form-group">
+						<button type="submit" id="submit" class="btn btn-primary">Submit</button>
+					</div>
+				</form>
+				{% else %}
+				<form method="post" id="myform" action="#">
+					<div class="form-group mt-3 mb-0">
+						<label for="">My Rating:</label>
+							{{data.my_rating_stars|safe}}	
+						<input type="hidden" name="rating" id="myrating" value="{{data.my_rating.rating}}" required >
+					</div>
+					<div class="form-group">
+						<label for="">Heading:</label>
+						<input type="text" name="heading" id="heading" placeholder="Rate heading" class="form-control" value="{{data.my_rating.heading}}">
+					</div>
+					<div class="form-group">
+						<label for="">Comments:</label>
+						<textarea name="comments" id="comments" class="form-control" placeholder="Your comment goes here" >{{data.my_rating.comments}}</textarea>
+					</div>
+					<div class="form-group">
+						<button type="submit" id="submit" class="btn btn-primary">Submit</button>
+					</div>
+				</form>
+				{% endif %}
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+	var stars= document.querySelectorAll(".myrating");
+	document.querySelectorAll(".myrating").forEach(function(span) {
+			span.onclick = () => {
+				var rate = span.dataset.rate;
+				document.getElementById("myrating").value = rate;
+				for (var i=0;i<rate;i++){
+					stars[i].setAttribute('class','fa fa-star checked');
+				}
+				for (var i=rate;i<5;i++){
+					stars[i].setAttribute('class','fa fa-star-o unchecked');
+				}
+				toggle_edit(false);
+            };
+		});
+	});
+	var user_rating = document.getElementById("myrating").value;
+	/*if (user_rating > 0){
+		toggle_edit(true);
+	}*/
+	function toggle_edit(arg){
+		document.getElementById("heading").disabled=arg;
+		document.getElementById("comments").disabled=arg;
+		document.getElementById("submit").disabled=arg;
+		document.getElementById("myform").style.display='block';
+	}
+	document.getElementById("editLink").onclick = function(){ 
+		toggle_edit(false);
+	};
+</script>
+{% endblock %}

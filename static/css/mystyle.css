@@ -1,0 +1,36 @@
+.book-contents {
+	display: flex;
+	flex-wrap: wrap;
+	width: 100%;
+}
+
+.book, .book-contents > a {
+	background-color: #ADD8E6;
+	box-shadow: 3px 3px #BFBFBF;
+	font-size: 20px;
+	margin: 10px;
+	padding: 3px;
+	width: 200px;
+	max-width: 100%;
+	min-width:200px;
+	height: 250px;
+	border: solid 1px #BFBFBF;
+	text-decoration: none;
+	color:black;
+}
+
+.book-contents > a:hover {
+	background-color:#E9ECEF;
+}
+	
+.book-contents > a:visited {
+	color:black;
+}
+.checked {
+	color: orange;
+}
+
+.unchecked {
+	color: orange;
+}
+

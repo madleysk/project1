@@ -8,3 +8,8 @@ tmp/nanoc/
 
 # Crash Log
 crash.log
+
+# my ignored files
+venv/*
+__pycache__/*
+*.sqlite3
