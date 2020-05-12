@@ -1,7 +1,8 @@
+{% if data.pagination %}
 <div class="text-center">
 	<span class="ellipsis">
 		{% if data.pagination.total>0 %}
-		Page {{ data.pagination.page }} / {{ data.pagination.total }}.
+			Page {{ data.pagination.page }} / {{ data.pagination.total }}.
 		{% endif %}
 	</span>
 </div>
@@ -12,7 +13,7 @@
 			<li class="page-item"><a class="page-link" href="?page={{ data.pagination.prev_page }}{{ data.url_params }}" title="Page précédente">précédent</a></li>
 		{% endif %}
 		
-		{% for page_num in data.page_range %}
+		{% for page_num in data.pagination.page_range %}
 			{% if page_num %}
 				{% if page_num == data.pagination.page %}
 					<li class="active"><a class="page-link" href="#">{{ page_num }}</a></li>
@@ -30,3 +31,4 @@
 		{% endif %}
 	</ul>
 </nav>
+{% endif %}

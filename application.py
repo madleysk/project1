@@ -35,16 +35,31 @@ def index():
 	"page_title":page_title
 	}
 	#init_db()
-
+	# Calculating off_set
+	page_arg = request.args.get('page')
+	if page_arg is not None:
+		actual_page = int(page_arg)
+	else:
+		actual_page= 1
+	off_set = (per_page*int(actual_page))-per_page
+	
+	# initializing res_count
+	res_count =0
+	
 	keywords = request.args.get('search')
 	data['search']=keywords
 	if keywords is not None and keywords !='':
+		data['url_params'] = '&search='+keywords
 		keywords = '%'+keywords+'%'
-		books = db.execute("SELECT * FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s ",{"s":keywords}).fetchall()
+		books = db.execute("SELECT * FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s LIMIT :per_page OFFSET :off_set",{"s":keywords,"per_page":per_page,"off_set":off_set}).fetchall()
 		if books:
 			data['books']= books
+			# pagination
+			res_count = db.execute("SELECT count(*) as total FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s ",{"s":keywords}).fetchone().total
+			data['pagination']=paginate(res_count,per_page)
 		else:
 			data['no_result']='No result found for these keywords.'
+	
 
 	return render_template('index.html',data=data)
 
@@ -149,10 +164,15 @@ def list_books(page='1'):
 	data = {
 	"page_title":page_title
 	}
+	# Calculating off_set
 	page_arg = request.args.get('page')
 	if page_arg is not None:
-		page = page_arg
-	off_set = per_page*int(page)
+		actual_page = int(page_arg)
+	else:
+		actual_page= 1
+	off_set = (per_page*int(actual_page))-per_page
+	
+	# initializing res_count
 	res_count =0
 	keywords = request.args.get('search')
 	data['search']=keywords
@@ -176,46 +196,54 @@ def list_books(page='1'):
 		# pagination
 		res_count = db.execute("SELECT count(*) as total FROM books").fetchone().total
 	
-	pages= int(res_count / per_page)
-	if res_count % per_page != 0:
-		pages += 1
-	iter_pages=[]
-	actual_page= int(off_set/per_page)
-	has_preview= False
-	has_next= False
-	next_page=0
-	prev_page=0
-	for i in range(pages):
-		iter_pages.append(i+1)
-	if actual_page > 1:
-		has_preview= True
-	else:
-		has_preview= None
-	if actual_page < pages:
-		has_next= True
-	else:
-		has_next= None
-	data['pagination']={
-		"iter_pages":iter_pages,
-		"page_range":range(1,pages),
-		"page":actual_page,
-		"has_prev":has_preview,
-		"has_next":has_next,
-		"next_page":actual_page+1,
-		"prev_page":actual_page-1,
-		"total":pages,
-	}
-	data['page_range'] = pagination_format(data['pagination'])
+	data['pagination']=paginate(res_count,per_page)
 	
 	return render_template("book_list.html",data=data)
 
 @app.route('/mybooks')
 def mybooks():
-	page_title = 'FInd a book'
+	page_title = 'My rated books'
 	data = {
 	"page_title":page_title
 	}
-	return render_template("layout.html",data=data)
+	user_id = session.get('user_id')	
+	# Calculating off_set
+	page_arg = request.args.get('page')
+	if page_arg is not None:
+		actual_page = int(page_arg)
+	else:
+		actual_page= 1
+	off_set = (per_page*int(actual_page))-per_page
+	
+	# initializing res_count
+	res_count =0
+	keywords = request.args.get('search')
+	data['search']=keywords
+	if keywords is not None and keywords !='':
+		data['url_params'] = '&search='+keywords
+		keywords = '%'+keywords+'%'
+		books = db.execute("Select r.id as review_id,r.isbn,r.user_id,r.heading,r.comments,r.rating,b.id as book_id,b.title,b.author,b.year from reviews r,books b\
+		WHERE r.isbn=b.isbn AND r.user_id=:user_id AND (title ilike :s or author ilike :s  or r.isbn ilike :s) LIMIT :per_page OFFSET :off_set",{"user_id":user_id,"s":keywords,"per_page":per_page,"off_set":off_set}).fetchall()
+		if books:
+			data['books']= books
+			# pagination
+			res_count = db.execute("Select count(*) as total from reviews r,books b WHERE r.isbn=b.isbn AND r.user_id=:user_id AND (title ilike :s or author ilike :s  or r.isbn ilike :s)",{"user_id":user_id,"s":keywords}).fetchone().total
+			
+		else:
+			data['no_result']='No result found for these keywords.'
+	else:
+		books = db.execute("Select r.id as review_id,r.isbn,r.user_id,r.heading,r.comments,r.rating,b.id as book_id,b.title,b.author,b.year from reviews r,books b\
+		WHERE r.isbn=b.isbn AND r.user_id=:user_id ORDER BY r.id DESC LIMIT :per_page OFFSET :off_set",{"user_id":user_id,"per_page":per_page,"off_set":off_set}).fetchall()
+		if books:
+			data['books']= books
+		else:
+			data['no_result']='No books in the database yet.'
+		# pagination
+		res_count = db.execute("Select count(*) as total from reviews r, books b WHERE r.isbn=b.isbn AND r.user_id=:user_id",{"user_id":user_id}).fetchone().total
+	
+	data['pagination']=paginate(res_count,per_page)
+	
+	return render_template("my_books.html",data=data)
 
 @app.route('/book/<int:id>', methods=['GET','POST'])
 def book(id):
@@ -323,7 +351,54 @@ def pagination_format(page_obj):
 	end_index = index + 3 if index <= max_index - 3 else max_index
 	page_range = list(page_obj['page_range'])[int(start_index):int(end_index)]
 	return page_range
+
+def paginate(res_count,per_page):
+	page_arg = request.args.get('page')
+	if page_arg is not None:
+		actual_page = int(page_arg)
+	else:
+		actual_page= 1
+	off_set = (per_page*int(actual_page))-per_page
+	if res_count > per_page and per_page > 0:
+		pages= int(res_count / per_page)
+		if res_count % per_page != 0:
+			pages += 1
+	else:
+		pages = 1
+	print(f" offset: {off_set} perpage: {per_page} resultat: {res_count}")
+	iter_pages=[]
+	has_preview= False
+	has_next= False
+	next_page=0
+	prev_page=0
+	for i in range(pages):
+		iter_pages.append(i+1)
+	if actual_page > 1:
+		has_preview= True
+	else:
+		has_preview= None
+	if actual_page < pages:
+		has_next= True
+	else:
+		has_next= None
 	
+	# showing progressively just a part of pages numbers
+	index = actual_page
+	max_index= int(pages)
+	start_index= index - 3 if index >=3 else 0
+	end_index = index + 3 if index <= max_index - 3 else max_index
+	page_range = list(range(1,pages))[int(start_index):int(end_index)]
+	pagination={
+		"iter_pages":iter_pages,
+		"page_range":page_range,
+		"page":actual_page,
+		"has_prev":has_preview,
+		"has_next":has_next,
+		"next_page":actual_page+1,
+		"prev_page":actual_page-1,
+		"total":pages,
+	}
+	return pagination
 # https://www.goodreads.com/book/review_counts.json?key=xpF7YDthAftyDazUNvFWQ&isbns=1416949658
 """
 import requests
