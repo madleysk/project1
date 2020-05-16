@@ -1,6 +1,11 @@
 {% extends "layout.html" %}
 
 {% block body %}
+<style>
+	th {
+		background-color:#DEDEDE;
+		}
+</style>
 <div class="container-fluid">
 	<h3 class="text-center">{{data.page_title}}</h3>
 		<form method="GET">
@@ -16,27 +21,11 @@
 	{% if data.search %}
 	<div class="mx-auto"><h5><strong>Search results for:</strong> {{data.search}}</h5></div>
 	{% endif %}
-	<div class="book-contents mx-auto">
+	<div class="book-contents table-responsive">
 		<table class="table table-hover">
-			<th>Book Title</th><th>Author</th><th>Published</th><th>All Ratings</th><th>My Rating</th>
+			<th>Book Title</th><th>Author</th><th>Published</th><th>ISBN</th><th>My Rating</th>
 		{% for book in data.books %}
-		<tr><td>{{book.title}}</td><td>{{book.author}}</td><td>{{book.year}}</td><td>{{book.rating}}</td><td>{{book.rating}}</td></tr>
-		<!--<a href="{{ url_for('book', id=book.book_id )}}" class="card book">
-			<div class="card-body">
-				<blockquote class="blockquote text-center border-0">
-				  <p class="m-0">{{book.title}}</p>
-				  <footer class="blockquote-footer">{{book.author}}</footer>
-				</blockquote>
-			</div>
-			<small class="text-center">{{book.year}}</small>
-			<small class="text-center">Ratings: 
-				<span class="fa fa-star checked" aria-hidden="true"></span>
-				<span class="fa fa-star checked" aria-hidden="true"></span>
-				<span class="fa fa-star checked" aria-hidden="true"></span>
-				<span class="fa fa-star-o unchecked" aria-hidden="true"></span>
-				<span class="fa fa-star-o unchecked" aria-hidden="true"></span>
-			</small>
-		</a> -->
+		<tr><td><a href="{{url_for('book', id=book.book_id)}}">{{book.title}}</a></td><td>{{book.author}}</td><td>{{book.year}}</td><td>{{book.isbn}}</td><td><span class="rating">{{book.rating}}</span></td></tr>
 		{% endfor %}
 		</table>
 	</div>
@@ -45,5 +34,10 @@
 		<h5 class="text-center">{{data.no_result}}</h5>
 	{% endif %}
 </div>
+<!-- Pagination section -->
+<div>
+	{% include "_paginationhelpers.html" %}
+</div>
+<script src="{{url_for('static',filename='js/myscript.js')}}?v=1.2"></script>
 {% endblock body %}
 

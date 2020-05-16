@@ -29,11 +29,11 @@ p{
 				<p><strong>Year:</strong> {{data.book.year}}</p>
 				{% if data.goodread_review %}
 				<p><strong>Goodread ratings:</strong> {{data.goodread_rating_stars|safe}}</p>
-				<p><strong>Goodread reviews count:</strong> {{data.goodread_review.books[0].reviews_count}}</p>
+				<p><strong>Goodread reviews count:</strong> {{data.goodread_review.books[0].work_ratings_count}}</p>
 				{% endif %}
 				<hr>
 				{%if data.my_rating %}
-				<p><strong>My rating: </strong>{{data.my_rating.rating}}</p>
+				<p><strong>My rating: </strong><span class="rating">{{data.my_rating.rating}}</span></p>
 				<p><strong>Heading: </strong>{{data.my_rating.heading}}</p>
 				<p><strong>Comments: </strong>{{data.my_rating.comments}}</p>
 				<a href="#" id="editLink" >Edit my rating</a>
@@ -111,4 +111,5 @@ document.addEventListener('DOMContentLoaded', function(){
 		toggle_edit(false);
 	};
 </script>
+<script src="{{url_for('static',filename='js/myscript.js')}}?v=1.0"></script>
 {% endblock %}

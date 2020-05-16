@@ -33,12 +33,7 @@
 				</blockquote>
 			</div>
 			<small class="text-center">{{book.year}}</small>
-			<small class="text-center">Ratings: 
-				<span class="fa fa-star checked" aria-hidden="true"></span>
-				<span class="fa fa-star checked" aria-hidden="true"></span>
-				<span class="fa fa-star checked" aria-hidden="true"></span>
-				<span class="fa fa-star-o unchecked" aria-hidden="true"></span>
-				<span class="fa fa-star-o unchecked" aria-hidden="true"></span>
+			<small class="text-center">Ratings: <span class="rating">0</span>
 			</small>
 		</a>
 		{% endfor %}
@@ -52,5 +47,6 @@
 <div>
 	{% include "_paginationhelpers.html" %}
 </div>
+<script src="{{url_for('static',filename='js/myscript.js')}}?v=1.2"></script>
 {% endblock body %}
 

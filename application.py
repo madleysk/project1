@@ -1,12 +1,15 @@
 import os
 
-from flask import Flask, session, render_template, jsonify, request, redirect, flash, url_for, request
+from flask import Flask, session, render_template, jsonify, request, redirect, flash, url_for, request, abort
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.sql import func
 from sqlalchemy.orm import scoped_session, sessionmaker
 import requests
 from auth import *
+from functions import *
+# explicit importation of the decorator fuction for login check
+from functions import require_login
 
 app = Flask(__name__)
 
@@ -29,6 +32,7 @@ per_page=25
 off_set=0
 
 @app.route("/")
+@require_login
 def index():
 	page_title = 'Home'
 	data = {
@@ -150,6 +154,7 @@ def login():
 	return render_template("login.html",data=data)
 
 @app.route('/logout')
+@require_login
 def logout():
 	#session.clear()
 	session.pop('username',None)
@@ -159,6 +164,7 @@ def logout():
 
 @app.route('/list_books')
 @app.route('/list_books/page/<int:page>')
+@require_login
 def list_books(page='1'):
 	page_title = 'Find a book'
 	data = {
@@ -201,6 +207,7 @@ def list_books(page='1'):
 	return render_template("book_list.html",data=data)
 
 @app.route('/mybooks')
+@require_login
 def mybooks():
 	page_title = 'My rated books'
 	data = {
@@ -237,7 +244,7 @@ def mybooks():
 		if books:
 			data['books']= books
 		else:
-			data['no_result']='No books in the database yet.'
+			data['no_result']='You have not yet rated any book.'
 		# pagination
 		res_count = db.execute("Select count(*) as total from reviews r, books b WHERE r.isbn=b.isbn AND r.user_id=:user_id",{"user_id":user_id}).fetchone().total
 	
@@ -246,6 +253,7 @@ def mybooks():
 	return render_template("my_books.html",data=data)
 
 @app.route('/book/<int:id>', methods=['GET','POST'])
+@require_login
 def book(id):
 	page_title = 'Book'
 	data = {
@@ -309,100 +317,20 @@ def book(id):
 	
 	return render_template("book.html",data=data)
 
-def init_db():
-	# Creating tables structure
-	with open('db_sql.sql') as fichier:
-		lignes = fichier.read().split(';')
-		for ligne in lignes:
-			if ligne !='':
-				db.execute(ligne)
-				db.commit()
-		db.commit()
-	# Creating default admin
-	try:
-		default_adm_pass = pass_hashing('Pass0321')
-		db.execute("INSERT INTO users (id,username,email,passwd,auth_level) VALUES(1,'admin','admin@mail.com',:passwd,4)",{"passwd":default_adm_pass})
-		db.commit()
-	except:
-		pass
 
-def format_rating(rate,css=''):
-	try:
-		rate = float(rate)
-	except:
-		return ''
-	rating_stars = ''
-	decimal = str(rate).split('.')[1]
-	for i in range(int(rate)):
-		rating_stars +='<span class="fa fa-star checked '+css+'" data-rate="'+str(i+1)+'"></span>\n'
-	if int(decimal[0]) >= 5: # sliced to be sure that we take the first digit if there is more than one
-		rating_stars +='<span class="fa fa-star-half checked '+css+'" data-rate="'+str(i+1)+'"></span>\n'
-		for i in range(int(rate+1),5):
-			rating_stars +='<span class="fa fa-star-o unchecked '+css+'" data-rate="'+str(i+1)+'"></span>\n'
-	else:
-		for i in range(int(rate),5):
-			rating_stars +='<span class="fa fa-star-o unchecked '+css+'" data-rate="'+str(i+1)+'"></span>\n'
-	return rating_stars
-	
-def pagination_format(page_obj):
-	index = page_obj['page']
-	max_index= int(page_obj['total'])
-	start_index= index - 3 if index >=3 else 0
-	end_index = index + 3 if index <= max_index - 3 else max_index
-	page_range = list(page_obj['page_range'])[int(start_index):int(end_index)]
-	return page_range
-
-def paginate(res_count,per_page):
-	page_arg = request.args.get('page')
-	if page_arg is not None:
-		actual_page = int(page_arg)
-	else:
-		actual_page= 1
-	off_set = (per_page*int(actual_page))-per_page
-	if res_count > per_page and per_page > 0:
-		pages= int(res_count / per_page)
-		if res_count % per_page != 0:
-			pages += 1
-	else:
-		pages = 1
-	print(f" offset: {off_set} perpage: {per_page} resultat: {res_count}")
-	iter_pages=[]
-	has_preview= False
-	has_next= False
-	next_page=0
-	prev_page=0
-	for i in range(pages):
-		iter_pages.append(i+1)
-	if actual_page > 1:
-		has_preview= True
-	else:
-		has_preview= None
-	if actual_page < pages:
-		has_next= True
-	else:
-		has_next= None
-	
-	# showing progressively just a part of pages numbers
-	index = actual_page
-	max_index= int(pages)
-	start_index= index - 3 if index >=3 else 0
-	end_index = index + 3 if index <= max_index - 3 else max_index
-	page_range = list(range(1,pages))[int(start_index):int(end_index)]
-	pagination={
-		"iter_pages":iter_pages,
-		"page_range":page_range,
-		"page":actual_page,
-		"has_prev":has_preview,
-		"has_next":has_next,
-		"next_page":actual_page+1,
-		"prev_page":actual_page-1,
-		"total":pages,
+@app.route('/api/<isbn>')
+def api(isbn):
+	book = db.execute('SELECT * FROM books WHERE isbn=:isbn',params={"isbn":isbn}).fetchone()
+	if book is None:
+		return abort(404)
+	rev_count = db.execute('SELECT count(*) as count FROM reviews WHERE isbn=:isbn',params={"isbn":isbn}).fetchone()
+	rev_score = db.execute('SELECT avg(rating) as avg_score FROM reviews WHERE isbn=:isbn',params={"isbn":isbn}).fetchone()
+	data = {
+		"title":book.title,
+		"author":book.author,
+		"year":book.year,
+		"isbn":book.isbn,
+		"review_count":rev_count.count,
+		"average_score":rev_score.avg_score,
 	}
-	return pagination
-# https://www.goodreads.com/book/review_counts.json?key=xpF7YDthAftyDazUNvFWQ&isbns=1416949658
-"""
-import requests
-res = requests.get('https://www.goodreads.com/book/review_counts.json',params=["key":key,"isbns":isbn])
-print(res.json())
-
-"""	
+	return jsonify(data)

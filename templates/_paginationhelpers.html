@@ -2,15 +2,15 @@
 <div class="text-center">
 	<span class="ellipsis">
 		{% if data.pagination.total>0 %}
-			Page {{ data.pagination.page }} / {{ data.pagination.total }}.
+			Page {{ data.pagination.page }} of {{ data.pagination.total }}.
 		{% endif %}
 	</span>
 </div>
 <nav aria-label="Navigation Page" class="pull-right" style="overflow:auto;">
 	<ul class="pagination">
 		{% if data.pagination.has_prev %}
-			<li class="page-item"><a class="page-link" href="?page=1" title="Aller à la première page" >&laquo; </a></li>
-			<li class="page-item"><a class="page-link" href="?page={{ data.pagination.prev_page }}{{ data.url_params }}" title="Page précédente">précédent</a></li>
+			<li class="page-item"><a class="page-link" href="?page=1" title="Go to the first page" >&laquo; </a></li>
+			<li class="page-item"><a class="page-link" href="?page={{ data.pagination.prev_page }}{{ data.url_params }}" title="Go to previous page">previous</a></li>
 		{% endif %}
 		
 		{% for page_num in data.pagination.page_range %}
@@ -26,8 +26,8 @@
 		{% endfor %}
 
 		{% if data.pagination.has_next %}
-			<li class="page-item"><a class="page-link" href="?page={{ data.pagination.next_page}}{{ data.url_params }}" title="Page suivante">suivant</a></li>
-			<li class="page-item"><a class="page-link" href="?page={{ data.pagination.total }}{{ data.url_params }}" title="Aller à la dernière page"> &raquo;</a></li>
+			<li class="page-item"><a class="page-link" href="?page={{ data.pagination.next_page}}{{ data.url_params }}" title="Go to next page">next</a></li>
+			<li class="page-item"><a class="page-link" href="?page={{ data.pagination.total }}{{ data.url_params }}" title="Go to the last page"> &raquo;</a></li>
 		{% endif %}
 	</ul>
 </nav>

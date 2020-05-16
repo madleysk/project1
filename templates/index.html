@@ -8,7 +8,7 @@
 				<h3 class="text-center">Find your prefered book</h3>
 				<div class="input-group mb-3">
 					<div class="input-group-prepend">
-						<span class="input-group-text" id="basic-addon1">Book<span class="fa fa-book fa-lg ml-2"></span></span>
+						<span class="input-group-text" id="basic-addon1"><span class="fa fa-book fa-lg ml-2"></span></span>
 					</div>
 					<input type="text" class="form-control" name="search" placeholder="Title, Author or ISBN" value="{% if data.search %}{{data.search}}{% endif %}" aria-label="Search" aria-describedby="basic-addon1" >
 					<div class="input-group-append">
@@ -31,12 +31,7 @@
 				</blockquote>
 			</div>
 			<small class="text-center">{{book.year}}</small>
-			<small class="text-center">Ratings: 
-				<span class="fa fa-star checked" aria-hidden="true"></span>
-				<span class="fa fa-star checked" aria-hidden="true"></span>
-				<span class="fa fa-star checked" aria-hidden="true"></span>
-				<span class="fa fa-star-o unchecked" aria-hidden="true"></span>
-				<span class="fa fa-star-o unchecked" aria-hidden="true"></span>
+			<small class="text-center">Ratings: <span class="rating">0</span>
 			</small>
 		</a>
 		{% endfor %}
@@ -50,5 +45,6 @@
 <div>
 	{% include "_paginationhelpers.html" %}
 </div>
+<script src="{{url_for('static',filename='js/myscript.js')}}?v=1.2"></script>
 {% endblock body %}
 
