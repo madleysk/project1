@@ -13,11 +13,10 @@
 					<input type="text" class="form-control" name="search" placeholder="Title, Author or ISBN" value="{% if data.search %}{{data.search}}{% endif %}" aria-label="Search" aria-describedby="basic-addon1" >
 					<div class="input-group-append">
 						<button type="submit" class="btn btn-primary" id="basic-addon2">Search</button>
-					</div
+					</div>
 				</div>
 			</div>
 		</form>
-	</div>
 	</div>
 	{% if data.books %}
 	<div class="mx-auto" style="width:1100px;max-width:100%;"><h5><strong>Search results for:</strong> {{data.search}}</h5></div>

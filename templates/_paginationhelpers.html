@@ -1,7 +1,7 @@
 {% if data.pagination %}
 <div class="text-center">
 	<span class="ellipsis">
-		{% if data.pagination.total>0 %}
+		{% if data.pagination.total>1 %}
 			Page {{ data.pagination.page }} of {{ data.pagination.total }}.
 		{% endif %}
 	</span>
