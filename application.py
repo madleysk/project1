@@ -55,11 +55,11 @@ def index():
 	if keywords is not None and keywords !='':
 		data['url_params'] = '&search='+keywords
 		keywords = '%'+keywords+'%'
-		books = db.execute("SELECT * FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s LIMIT :per_page OFFSET :off_set",{"s":keywords,"per_page":per_page,"off_set":off_set}).fetchall()
+		books = db.execute("SELECT * FROM books WHERE title like :s or author like :s  or isbn like :s LIMIT :per_page OFFSET :off_set",{"s":keywords,"per_page":per_page,"off_set":off_set}).fetchall()
 		if books:
 			data['books']= books
 			# pagination
-			res_count = db.execute("SELECT count(*) as total FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s ",{"s":keywords}).fetchone().total
+			res_count = db.execute("SELECT count(*) as total FROM books WHERE title like :s or author like :s  or isbn like :s ",{"s":keywords}).fetchone().total
 			data['pagination']=paginate(res_count,per_page)
 		else:
 			data['no_result']='No result found for these keywords.'
@@ -185,11 +185,11 @@ def list_books(page='1'):
 	if keywords is not None and keywords !='':
 		data['url_params'] = '&search='+keywords
 		keywords = '%'+keywords+'%'
-		books = db.execute("SELECT * FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s LIMIT :per_page OFFSET :off_set",{"s":keywords,"per_page":per_page,"off_set":off_set}).fetchall()
+		books = db.execute("SELECT * FROM books WHERE title like :s or author like :s  or isbn like :s LIMIT :per_page OFFSET :off_set",{"s":keywords,"per_page":per_page,"off_set":off_set}).fetchall()
 		if books:
 			data['books']= books
 			# pagination
-			res_count = db.execute("SELECT count(*) as total FROM books WHERE title ilike :s or author ilike :s  or isbn ilike :s ",{"s":keywords}).fetchone().total
+			res_count = db.execute("SELECT count(*) as total FROM books WHERE title like :s or author like :s  or isbn like :s ",{"s":keywords}).fetchone().total
 			
 		else:
 			data['no_result']='No result found for these keywords.'
@@ -230,11 +230,11 @@ def mybooks():
 		data['url_params'] = '&search='+keywords
 		keywords = '%'+keywords+'%'
 		books = db.execute("Select r.id as review_id,r.isbn,r.user_id,r.heading,r.comments,r.rating,b.id as book_id,b.title,b.author,b.year from reviews r,books b\
-		WHERE r.isbn=b.isbn AND r.user_id=:user_id AND (title ilike :s or author ilike :s  or r.isbn ilike :s) LIMIT :per_page OFFSET :off_set",{"user_id":user_id,"s":keywords,"per_page":per_page,"off_set":off_set}).fetchall()
+		WHERE r.isbn=b.isbn AND r.user_id=:user_id AND (title like :s or author like :s  or r.isbn like :s) LIMIT :per_page OFFSET :off_set",{"user_id":user_id,"s":keywords,"per_page":per_page,"off_set":off_set}).fetchall()
 		if books:
 			data['books']= books
 			# pagination
-			res_count = db.execute("Select count(*) as total from reviews r,books b WHERE r.isbn=b.isbn AND r.user_id=:user_id AND (title ilike :s or author ilike :s  or r.isbn ilike :s)",{"user_id":user_id,"s":keywords}).fetchone().total
+			res_count = db.execute("Select count(*) as total from reviews r,books b WHERE r.isbn=b.isbn AND r.user_id=:user_id AND (title like :s or author like :s  or r.isbn like :s)",{"user_id":user_id,"s":keywords}).fetchone().total
 			
 		else:
 			data['no_result']='No result found for these keywords.'
